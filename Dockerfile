@@ -1,16 +1,12 @@
 FROM debian
 LABEL maintainer="loblab"
 
-ARG USER=loblab
-ARG UID=1000
-ARG HOME=/noip-renew
-#ARG TZ=Asia/Shanghai
-#ARG APT_MIRROR=mirrors.163.com
 ARG DEBIAN_FRONTED=noninteractive
 ARG PYTHON=python3
+ARG USER=abc
+ENV UID=99
+ENV GID=100
 
-#RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-#RUN sed -i "s/deb.debian.org/$APT_MIRROR/" /etc/apt/sources.list
 RUN apt-get update && apt-get -y upgrade
 RUN apt-get -y install chromium-chromedriver || \
     apt-get -y install chromium-driver || \
@@ -19,8 +15,17 @@ RUN apt-get -y install ${PYTHON}-pip
 RUN $PYTHON -m pip install selenium
 RUN apt-get -y install curl wget
 
-RUN useradd -d $HOME -u $UID $USER
+RUN useradd -d $HOME -u $UID -g $GID $USER
 USER $USER
 WORKDIR $HOME
-CMD ["bash"]
 
+ADD noip-renew-skd.sh $HOME/noip-renew-skd.sh
+RUN	chmod +x $HOME/noip-renew-skd.sh
+ADD noip-renew.py $HOME/noip-renew.py
+RUN chmod +x $HOME/noip-renew.py
+ADD noip-renew.sh $HOME/noip-renew.sh
+RUN	chmod +x $HOME/noip-renew.sh
+ADD setup.sh $HOME/setup.sh
+RUN chmod +x $HOME/setup.sh
+
+CMD ["/sbin/my_init"]
